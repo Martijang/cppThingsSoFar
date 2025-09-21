@@ -34,16 +34,16 @@ public:
     //Connect to target addr, resolves address before connect. eg: localhost -> 127.0.01
     bool Connect(const char* addr, const int &port) {
         std::string portStr = std::to_string(port);
-        iResult = getaddrinfo(addr, std::move(portStr.c_str()), &hints, &result);
+        iResult = getaddrinfo(addr, portStr.c_str(), &hints, &result);
         if (iResult != 0) {
-            std::cout << addr << ": getaddrinfo failed with error: " << iResult << "\n";
+            std::cerr << addr << ": getaddrinfo failed with error: " << iResult << "\n";
             WSACleanup();
             return false;
         }
 
         ConnectSocket = socket(result->ai_family, result->ai_socktype, result->ai_protocol);
         if (ConnectSocket == INVALID_SOCKET) {
-            std::cout << "Socket creation failed: " << WSAGetLastError() << "\n";
+            std::cerr << "Socket creation failed: " << WSAGetLastError() << "\n";
             freeaddrinfo(result);
             WSACleanup();
             return false;
@@ -51,7 +51,7 @@ public:
 
         iResult = connect(ConnectSocket, result->ai_addr, (int)result->ai_addrlen);
         if (iResult == SOCKET_ERROR) {
-            std::cout << addr << ": Connect failed: " << WSAGetLastError() << "\n";
+            std::cerr << addr << ": Connect failed: " << WSAGetLastError() << "\n";
             closesocket(ConnectSocket);
             ConnectSocket = INVALID_SOCKET;
             freeaddrinfo(result);
@@ -67,7 +67,7 @@ public:
     bool Send(const std::string& message) {
         iResult = send(ConnectSocket, message.c_str(), (int)message.size(), 0);
         if (iResult == SOCKET_ERROR) {
-            std::cout << "Send failed: " << WSAGetLastError() << "\n";
+            std::cerr << "Send failed: " << WSAGetLastError() << "\n";
             closesocket(ConnectSocket);
             WSACleanup();
             return false;
@@ -77,13 +77,15 @@ public:
 
     //Recive function. Checks if response contains 200(OK) statues code
     void CheckCode200(int buffSize, char* addr) {
-        char* recvbuf = new char[buffSize];
+        std::unique_ptr<char[]> recvbuf(new char[buffSize]);
+        // char* recvbuf = new char[buffSize];
 
-        ZeroMemory(recvbuf, buffSize);
+        //lesson: I should try giving raw pointers(using get func) to those function which has error when using unique_ptr
+        ZeroMemory(recvbuf.get(), buffSize);
 
-        iResult = recv(ConnectSocket, recvbuf, buffSize, 0);
+        iResult = recv(ConnectSocket, recvbuf.get(), buffSize, 0);
         if (iResult > 0) {
-            std::string result(std::move(recvbuf), iResult);
+            std::string result(recvbuf.get(), iResult);
             std::size_t found = result.find("200");
 
             if(!found){
@@ -93,12 +95,12 @@ public:
             }
         }
         else if (iResult == 0) {
-            std::cout << addr << ": Connection closed\n";
+            std::cerr << addr << ": Connection closed\n";
         }
         else {
-            std::cout << addr << ": recv failed: " << WSAGetLastError() << "\n";
+            std::cerr << addr << ": recv failed: " << WSAGetLastError() << "\n";
         }
-        delete[] recvbuf;
+       // delete[] recvbuf;
     }
 
     ~Socket(){
@@ -141,8 +143,7 @@ int main(int argc, char* argv[]) {
 
     std::vector<std::thread> Tvector;
     for (size_t i = 1; i < argc; i++){
-        std::thread t1(std::move(send_request), argv[i]);
-        Tvector.push_back(std::move(t1));
+        Tvector.emplace_back(send_request, argv[i]);
     }
     
     for (std::thread &v: Tvector){
@@ -155,4 +156,3 @@ int main(int argc, char* argv[]) {
     std::cout << "Duration to send " << argc - 1 << " request: " << duration.count() << "ms" << "\n";
     return 0;
 }
-
