@@ -31,8 +31,8 @@ public:
         hints.ai_protocol = IPPROTO_TCP;
     }
 
-    /**Connect to target addr, resolves address before connect. eg: localhost -> 127.0.01*/
-    bool Connect(const char* addr, int port) {
+    //Connect to target addr, resolves address before connect. eg: localhost -> 127.0.01
+    bool Connect(char* addr, const int &port) {
         std::string portStr = std::to_string(port);
         iResult = getaddrinfo(addr, std::move(portStr.c_str()), &hints, &result);
         if (iResult != 0) {
@@ -63,7 +63,7 @@ public:
         return true;
     }
 
-    /**Sends message to target*/
+    //Sends message to target
     bool Send(const std::string& message) {
         iResult = send(ConnectSocket, message.c_str(), (int)message.size(), 0);
         if (iResult == SOCKET_ERROR) {
@@ -75,7 +75,7 @@ public:
         return true;
     }
 
-    /**Recive function. Checks if response contains 200(OK) statues code*/
+    //Recive function. Checks if response contains 200(OK) statues code
     void CheckCode200(int buffSize, char* addr) {
         char* recvbuf = new char[buffSize];
 
@@ -119,6 +119,7 @@ Duration to send 2 request: 55ms
 */
 
 //with mutex threads cannot share resources.
+
 void send_request(char* url){
     mtx.lock();
     Socket s;
