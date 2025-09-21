@@ -32,7 +32,7 @@ public:
     }
 
     //Connect to target addr, resolves address before connect. eg: localhost -> 127.0.01
-    bool Connect(char* addr, const int &port) {
+    bool Connect(const char* addr, const int &port) {
         std::string portStr = std::to_string(port);
         iResult = getaddrinfo(addr, std::move(portStr.c_str()), &hints, &result);
         if (iResult != 0) {
@@ -155,3 +155,4 @@ int main(int argc, char* argv[]) {
     std::cout << "Duration to send " << argc - 1 << " request: " << duration.count() << "ms" << "\n";
     return 0;
 }
+
