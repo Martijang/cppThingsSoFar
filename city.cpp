@@ -6,7 +6,7 @@ class City{
     private:
     std::unordered_map<int, std::string> Map;
     public:
-    /** adds new citizen, requirements: id(int) comment(std::stringi) */
+    /**Adds new citizen, requirements: id(int) comment(std::string) */
     void Add(int id, std::string extra){
 
         if(Map.find(id) != Map.end()){
@@ -16,7 +16,7 @@ class City{
             std::cout << "ID: " << id << " COMMENT: " << extra << " has been added\n";
         }
     }
-    /** deletes citizen, requirements: id(int)*/
+    /**Deletes citizen, requirements: id(int)*/
     void Delete(int id){
 
         if(Map.find(id) != Map.end()){
@@ -27,7 +27,7 @@ class City{
         }
     }
 
-    /** prints all items in the Map*/
+    /**Prints all items in the Map*/
     void Print_all(){
         int total = 0;
         for (auto it: Map)
@@ -100,4 +100,5 @@ int main(){
     }
     
     return 0;
+
 }
