@@ -6,8 +6,8 @@ class City{
     private:
     std::unordered_map<int, std::string> Map;
     public:
-    /**Adds new citizen, requirements: id(int) comment(std::string) */
-    void Add(int id, std::string extra){
+    // adds new citizen, requirements: id(int) comment(std::stringi)
+    void Add(int id, std::string &extra){
 
         if(Map.find(id) != Map.end()){
             std::cout << "This id already exists\n";
@@ -16,8 +16,8 @@ class City{
             std::cout << "ID: " << id << " COMMENT: " << extra << " has been added\n";
         }
     }
-    /**Deletes citizen, requirements: id(int)*/
-    void Delete(int id){
+    // deletes citizen, requirements: id(int)
+    void Delete(int &id){
 
         if(Map.find(id) != Map.end()){
             std::cout << "ID: " << id << " COMMENT: " << Map.find(id)->second << " has been deleted\n";
@@ -27,7 +27,7 @@ class City{
         }
     }
 
-    /**Prints all items in the Map*/
+    //prints all items in the Map
     void Print_all(){
         int total = 0;
         for (auto it: Map)
@@ -38,7 +38,7 @@ class City{
         std::cout << "Total number of citizens: " <<  total << std::endl;
     }
 
-    /**Looking for specific citizen, requirements: id(int) */
+    //Looking for specific citizen, requirements: id(int)
     void Look(int id){
         if(Map.find(id) != Map.end()){
             std::cout << "ID: " << id << " COMMENT: " << Map.find(id)->second << std::endl;
@@ -100,5 +100,4 @@ int main(){
     }
     
     return 0;
-
 }
