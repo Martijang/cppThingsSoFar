@@ -88,10 +88,10 @@ public:
             std::string result(recvbuf.get(), iResult);
             std::size_t found = result.find("200");
 
-            if(!found){
-                std::cout << "There is no OK code(200) it might be failed.\n";
-            }else{
+            if(found){
                 std::cout << addr << ": OK!\n";
+            }else{
+                std::cout << "There is no OK code(200) it might be failed.\n";
             }
         }
         else if (iResult == 0) {
@@ -156,3 +156,4 @@ int main(int argc, char* argv[]) {
     std::cout << "Duration to send " << argc - 1 << " request: " << duration.count() << "ms" << "\n";
     return 0;
 }
+
