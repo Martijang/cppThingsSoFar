@@ -34,7 +34,7 @@ public:
     /**Connect to target addr, resolves address before connect. eg: localhost -> 127.0.01*/
     bool Connect(const char* addr, int port) {
         std::string portStr = std::to_string(port);
-        iResult = getaddrinfo(addr, portStr.c_str(), &hints, &result);
+        iResult = getaddrinfo(addr, std::move(portStr.c_str()), &hints, &result);
         if (iResult != 0) {
             std::cout << addr << ": getaddrinfo failed with error: " << iResult << "\n";
             WSACleanup();
@@ -75,7 +75,6 @@ public:
         return true;
     }
 
-    //Didn't used smart pointers becuase ZeroMemory causes some problem
     /**Recive function. Checks if response contains 200(OK) statues code*/
     void CheckCode200(int buffSize, char* addr) {
         char* recvbuf = new char[buffSize];
@@ -84,7 +83,7 @@ public:
 
         iResult = recv(ConnectSocket, recvbuf, buffSize, 0);
         if (iResult > 0) {
-            std::string result(recvbuf, iResult);
+            std::string result(std::move(recvbuf), iResult);
             std::size_t found = result.find("200");
 
             if(!found){
@@ -141,7 +140,7 @@ int main(int argc, char* argv[]) {
 
     std::vector<std::thread> Tvector;
     for (size_t i = 1; i < argc; i++){
-        std::thread t1(send_request, argv[i]);
+        std::thread t1(std::move(send_request), argv[i]);
         Tvector.push_back(std::move(t1));
     }
     
@@ -155,4 +154,3 @@ int main(int argc, char* argv[]) {
     std::cout << "Duration to send " << argc - 1 << " request: " << duration.count() << "ms" << "\n";
     return 0;
 }
-
