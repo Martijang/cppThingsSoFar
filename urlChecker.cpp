@@ -75,6 +75,7 @@ public:
         return true;
     }
 
+    //Didn't used smart pointers becuase ZeroMemory causes some problem
     /**Recive function. Checks if response contains 200(OK) statues code*/
     void CheckCode200(int buffSize, char* addr) {
         char* recvbuf = new char[buffSize];
@@ -154,3 +155,4 @@ int main(int argc, char* argv[]) {
     std::cout << "Duration to send " << argc - 1 << " request: " << duration.count() << "ms" << "\n";
     return 0;
 }
+
