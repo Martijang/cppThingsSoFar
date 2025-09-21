@@ -6,6 +6,7 @@
 #include <vector>
 #include <chrono>
 #include <mutex>
+#include <memory>
 #pragma comment(lib, "Ws2_32.lib")
 
 using namespace std::chrono;
@@ -77,7 +78,7 @@ public:
 
     //Recive function. Checks if response contains 200(OK) statues code
     void CheckCode200(int buffSize, char* addr) {
-        std::unique_ptr<char[]> recvbuf(new char[buffSize]);
+        std::unique_ptr<char[]> recvbuf = std::make_unique<char[]>(buffSize);
         // char* recvbuf = new char[buffSize];
 
         //lesson: I should try giving raw pointers(using get func) to those function which has error when using unique_ptr
@@ -156,4 +157,5 @@ int main(int argc, char* argv[]) {
     std::cout << "Duration to send " << argc - 1 << " request: " << duration.count() << "ms" << "\n";
     return 0;
 }
+
 
