@@ -30,7 +30,7 @@ class City{
     //prints all items in the Map
     void Print_all(){
         int total = 0;
-        for (auto [key, value] : Map)
+        for (auto& [key, value] : Map)
         {
             std::cout << "ID: " << key << " COMMENT: " << value << std::endl;
             total ++;
