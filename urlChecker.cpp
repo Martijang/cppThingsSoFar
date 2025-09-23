@@ -17,12 +17,13 @@ private:
     struct addrinfo* result = NULL, hints;
     int iResult = 0;
 
+    char* addr;
 public:
-    explicit Socket(){
+    explicit Socket(char* address): addr{address}{
         WSADATA wsa;
         iResult = WSAStartup(MAKEWORD(2, 2), &wsa);
         if (iResult != 0) {
-            std::cout << "WSAStartup failed with error: " << iResult << "\n";
+            std::cerr << "|" <<addr << "| WSAStartup failed with error: " << iResult << std::endl;
             exit(1);
         }
 
@@ -33,18 +34,18 @@ public:
     }
 
     //Connect to target addr, resolves address before connect. eg: localhost -> 127.0.01
-    bool Connect(const char* addr, const int &port) {
+    bool Connect(const int &port) {
         std::string portStr = std::to_string(port);
         iResult = getaddrinfo(addr, portStr.c_str(), &hints, &result);
         if (iResult != 0) {
-            std::cerr << addr << ": getaddrinfo failed with error: " << iResult << "\n";
+            std::cerr << addr << ": getaddrinfo failed with error: " << iResult << std::endl;
             WSACleanup();
             return false;
         }
 
         ConnectSocket = socket(result->ai_family, result->ai_socktype, result->ai_protocol);
         if (ConnectSocket == INVALID_SOCKET) {
-            std::cerr << "Socket creation failed: " << WSAGetLastError() << "\n";
+            std::cerr << "Socket creation failed: " << WSAGetLastError() << std::endl;
             freeaddrinfo(result);
             WSACleanup();
             return false;
@@ -52,7 +53,7 @@ public:
 
         iResult = connect(ConnectSocket, result->ai_addr, (int)result->ai_addrlen);
         if (iResult == SOCKET_ERROR) {
-            std::cerr << addr << ": Connect failed: " << WSAGetLastError() << "\n";
+            std::cerr << addr << ": Connect failed: " << WSAGetLastError() << std::endl;
             closesocket(ConnectSocket);
             ConnectSocket = INVALID_SOCKET;
             freeaddrinfo(result);
@@ -68,7 +69,7 @@ public:
     bool Send(const std::string& message) {
         iResult = send(ConnectSocket, message.c_str(), (int)message.size(), 0);
         if (iResult == SOCKET_ERROR) {
-            std::cerr << "Send failed: " << WSAGetLastError() << "\n";
+            std::cerr << "Send failed: " << WSAGetLastError() << std::endl;
             closesocket(ConnectSocket);
             WSACleanup();
             return false;
@@ -77,7 +78,7 @@ public:
     }
 
     //Recive function. Checks if response contains 200(OK) statues code
-    void CheckCode200(int buffSize, char* addr) {
+    void CheckCode200(int buffSize) {
         std::unique_ptr<char[]> recvbuf = std::make_unique<char[]>(buffSize);
         // char* recvbuf = new char[buffSize];
 
@@ -99,7 +100,7 @@ public:
             std::cerr << addr << ": Connection closed\n";
         }
         else {
-            std::cerr << addr << ": recv failed: " << WSAGetLastError() << "\n";
+            std::cerr << addr << ": recv failed: " << WSAGetLastError() << std::endl;
         }
        // delete[] recvbuf;
     }
@@ -125,11 +126,12 @@ Duration to send 2 request: 55ms
 
 void send_request(char* url){
     mtx.lock();
-    Socket s;
+    //gets address and initalize
+    Socket s(url);
     //s.SockInit();
-    if (s.Connect(url, 80)) {
+    if (s.Connect(80)) {//no need to call an address menually
         s.Send("GET / HTTP/1.1\r\n\r\nContent-Length: 0\r\n\r\n");
-        s.CheckCode200(60, url); // 60 byte is enough to find http code 200 from response
+        s.CheckCode200(60); // 60 byte is enough to find http code 200 from response
     }
     mtx.unlock();
 }
@@ -157,5 +159,3 @@ int main(int argc, char* argv[]) {
     std::cout << "Duration to send " << argc - 1 << " request: " << duration.count() << "ms" << "\n";
     return 0;
 }
-
-
