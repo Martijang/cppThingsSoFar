@@ -7,7 +7,7 @@ class City{
     std::unordered_map<int, std::string> Map;
     public:
     // adds new citizen, requirements: id(int) comment(std::stringi)
-    void Add(int id, std::string &extra){
+    void Add(int &id, std::string &extra){
 
         if(Map.find(id) != Map.end()){
             std::cout << "This id already exists\n";
@@ -30,9 +30,9 @@ class City{
     //prints all items in the Map
     void Print_all(){
         int total = 0;
-        for (auto it: Map)
+        for (auto [key, value] : Map)
         {
-            std::cout << "ID: " << it.first << " COMMENT: " << it.second << std::endl;
+            std::cout << "ID: " << key << " COMMENT: " << value << std::endl;
             total ++;
         }   
         std::cout << "Total number of citizens: " <<  total << std::endl;
