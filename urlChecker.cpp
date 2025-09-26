@@ -13,17 +13,17 @@ using namespace std::chrono;
 
 class Socket {
 private:
-    SOCKET ConnectSocket = INVALID_SOCKET;
-    struct addrinfo* result = NULL, hints;
-    int iResult = 0;
+    SOCKET m_ConnectSocket = INVALID_SOCKET;
+    struct addrinfo* m_result = NULL, hints;
+    int m_iResult = 0;
 
-    char* addr;
+    char* m_addr;
 public:
-    explicit Socket(char* address): addr{address}{
+    explicit Socket(char* address): m_addr{address}{
         WSADATA wsa;
-        iResult = WSAStartup(MAKEWORD(2, 2), &wsa);
-        if (iResult != 0) {
-            std::cerr << "|" <<addr << "| WSAStartup failed with error: " << iResult << std::endl;
+        m_iResult = WSAStartup(MAKEWORD(2, 2), &wsa);
+        if (m_iResult != 0) {
+            std::cerr << "|" <<m_addr << "| WSAStartup failed with error: " << m_iResult << std::endl;
             exit(1);
         }
 
@@ -36,41 +36,41 @@ public:
     //Connect to target addr, resolves address before connect. eg: localhost -> 127.0.01
     bool Connect(const int &port) {
         std::string portStr = std::to_string(port);
-        iResult = getaddrinfo(addr, portStr.c_str(), &hints, &result);
-        if (iResult != 0) {
-            std::cerr << addr << ": getaddrinfo failed with error: " << iResult << std::endl;
+        m_iResult = getaddrinfo(m_addr, portStr.c_str(), &hints, &m_result);
+        if (m_iResult != 0) {
+            std::cerr << m_addr << ": getaddrinfo failed with error: " << m_iResult << std::endl;
             WSACleanup();
             return false;
         }
 
-        ConnectSocket = socket(result->ai_family, result->ai_socktype, result->ai_protocol);
-        if (ConnectSocket == INVALID_SOCKET) {
+        m_ConnectSocket = socket(m_result->ai_family, m_result->ai_socktype, m_result->ai_protocol);
+        if (m_ConnectSocket == INVALID_SOCKET) {
             std::cerr << "Socket creation failed: " << WSAGetLastError() << std::endl;
-            freeaddrinfo(result);
+            freeaddrinfo(m_result);
             WSACleanup();
             return false;
         }
 
-        iResult = connect(ConnectSocket, result->ai_addr, (int)result->ai_addrlen);
-        if (iResult == SOCKET_ERROR) {
-            std::cerr << addr << ": Connect failed: " << WSAGetLastError() << std::endl;
-            closesocket(ConnectSocket);
-            ConnectSocket = INVALID_SOCKET;
-            freeaddrinfo(result);
+        m_iResult = connect(m_ConnectSocket, m_result->ai_addr, (int)m_result->ai_addrlen);
+        if (m_iResult == SOCKET_ERROR) {
+            std::cerr << m_addr << ": Connect failed: " << WSAGetLastError() << std::endl;
+            closesocket(m_ConnectSocket);
+            m_ConnectSocket = INVALID_SOCKET;
+            freeaddrinfo(m_result);
             WSACleanup();
             return false;
         }
 
-        freeaddrinfo(result);
+        freeaddrinfo(m_result);
         return true;
     }
 
     //Sends message to target
     bool Send(const std::string& message) {
-        iResult = send(ConnectSocket, message.c_str(), (int)message.size(), 0);
-        if (iResult == SOCKET_ERROR) {
+        m_iResult = send(m_ConnectSocket, message.c_str(), (int)message.size(), 0);
+        if (m_iResult == SOCKET_ERROR) {
             std::cerr << "Send failed: " << WSAGetLastError() << std::endl;
-            closesocket(ConnectSocket);
+            closesocket(m_ConnectSocket);
             WSACleanup();
             return false;
         }
@@ -85,29 +85,29 @@ public:
         //lesson: I should try giving raw pointers(using get func) to those function which has error when using unique_ptr
         ZeroMemory(recvbuf.get(), buffSize);
 
-        iResult = recv(ConnectSocket, recvbuf.get(), buffSize, 0);
-        if (iResult > 0) {
-            std::string result(recvbuf.get(), iResult);
-            std::size_t found = result.find("200");
+        m_iResult = recv(m_ConnectSocket, recvbuf.get(), buffSize, 0);
+        if (m_iResult > 0) {
+            std::string m_result(recvbuf.get(), m_iResult);
+            std::size_t found = m_result.find("200");
 
             if(found){
-                std::cout << addr << ": OK!\n";
+                std::cout << m_addr << ": OK!\n";
             }else{
                 std::cout << "There is no OK code(200) it might be failed.\n";
             }
         }
-        else if (iResult == 0) {
-            std::cerr << addr << ": Connection closed\n";
+        else if (m_iResult == 0) {
+            std::cerr << m_addr << ": Connection closed\n";
         }
         else {
-            std::cerr << addr << ": recv failed: " << WSAGetLastError() << std::endl;
+            std::cerr << m_addr << ": recv failed: " << WSAGetLastError() << std::endl;
         }
        // delete[] recvbuf;
     }
 
     ~Socket(){
-        if (ConnectSocket != INVALID_SOCKET) {
-            closesocket(ConnectSocket);
+        if (m_ConnectSocket != INVALID_SOCKET) {
+            closesocket(m_ConnectSocket);
         }
         WSACleanup();
      }
@@ -124,7 +124,7 @@ Duration to send 2 request: 55ms
 
 //with mutex threads cannot share resources.
 
-void send_request(char* url){
+void sendRequest(char* url){
     mtx.lock();
     //gets address and initalize
     Socket s(url);
@@ -146,7 +146,7 @@ int main(int argc, char* argv[]) {
 
     for (int i = 1; i < argc; i++)
     {
-        std::thread t(send_request, argv[i]);
+        std::thread t(sendRequest, argv[i]);
         t.join();
     }
     
