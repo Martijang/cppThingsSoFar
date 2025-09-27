@@ -138,7 +138,7 @@ void sendRequest(char* url){
 
 int main(int argc, char* argv[]) {
     if (argc < 2){
-        std::cout << "usage: ./<name.exe> URL URL...\n";
+        std::cout << "usage: ./<urlChecker.exe> URL URL...\n";
         return 0;
     }
 
@@ -157,3 +157,4 @@ int main(int argc, char* argv[]) {
     std::cout << "Duration to send " << argc - 1 << " request: " << duration.count() << "ms" << "\n";
     return 0;
 }
+
