@@ -140,12 +140,14 @@ public:
 
     void run(){
         auto start = high_resolution_clock::now();
-
+        std::vector<std::thread> Tvector;
+        
         for (int i = 1; i < m_argc; i++)
-        {
-            std::thread t(sendRequest, m_argv[i]);
+            Tvector.emplace_back(sendRequest, m_argv[i]);
+        
+        for (std::thread &t : Tvector)
             t.join();
-        }
+
         auto stop = high_resolution_clock::now();
         auto duration = duration_cast<milliseconds>(stop - start);
 
