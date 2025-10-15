@@ -12,7 +12,6 @@
 #include <mutex>
 #include <memory>
 #pragma comment(lib, "Ws2_32.lib")
-#include "checker.hpp"
 
 using namespace std::chrono;
 std::mutex mtx;
@@ -156,3 +155,4 @@ public:
 };
 
 #endif
+
