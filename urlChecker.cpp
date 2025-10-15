@@ -80,11 +80,8 @@ public:
     //Recive function. Checks if response contains 200(OK) statues code
     void CheckCode200(int buffSize) {
         std::unique_ptr<char[]> recvbuf = std::make_unique<char[]>(buffSize);
-        // char* recvbuf = new char[buffSize];
 
-        //lesson: I should try giving raw pointers(using get func) to those function which has error when using unique_ptr
         ZeroMemory(recvbuf.get(), buffSize);
-
         m_iResult = recv(m_ConnectSocket, recvbuf.get(), buffSize, 0);
         if (m_iResult > 0) {
             std::string m_result(recvbuf.get(), m_iResult);
@@ -102,7 +99,6 @@ public:
         else {
             std::cerr << m_addr << ": recv failed: " << WSAGetLastError() << std::endl;
         }
-       // delete[] recvbuf;
     }
 
     ~Socket(){
@@ -114,24 +110,13 @@ public:
 };
 
 std::mutex mtx;
-/*without mutex, error occurs
-error happened cuz of e.com affected google.com url 
-eg: ./urlChecker.exe www.google.com e.com
-e.com: getaddrinfo failed with error: 11001
-www.google.com: Connect failed: 10038
-Duration to send 2 request: 55ms
-*/
-
-//with mutex threads cannot share resources.
 
 void sendRequest(char* url){
     mtx.lock();
-    //gets address and initalize
     Socket s(url);
-    //s.SockInit();
-    if (s.Connect(80)) {//no need to call an address menually
+    if (s.Connect(80)) {
         s.Send("GET / HTTP/1.1\r\n\r\nContent-Length: 0\r\n\r\n");
-        s.CheckCode200(60); // 60 byte is enough to find http code 200 from response
+        s.CheckCode200(60);
     }
     mtx.unlock();
 }
@@ -157,4 +142,5 @@ int main(int argc, char* argv[]) {
     std::cout << "Duration to send " << argc - 1 << " request: " << duration.count() << "ms" << "\n";
     return 0;
 }
+
 
