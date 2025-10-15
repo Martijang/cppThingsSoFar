@@ -102,7 +102,7 @@ public:
             std::cerr << m_addr << ": Connection closed\n";
         }
         else {
-            std::cerr << m_addr << ": recv failed: " << WSAGetLastError() << std::endl;
+            std::cerr << m_addr << ": recv failed with error code : " << WSAGetLastError() << std::endl;
         }
     }
 
